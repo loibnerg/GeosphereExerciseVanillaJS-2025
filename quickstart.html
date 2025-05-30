@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dynamischer Geosphere API Fetch</title>
+</head>
+<body>
+  <button id="fetchData">Daten abrufen</button>
+
+  <script>
+    document.getElementById('fetchData').addEventListener('click', async () => {
+      // === Dynamische Parameter-Definition ===
+      const baseUrl = 'https://dataset.api.hub.geosphere.at/v1/station/historical/klima-v2-1h';  // Stündliche Klimadaten
+
+      const parameters = ['tl', 'ff', 'rr', 'so_h'];             // Parameter: Temperatur, Wind, Niederschlag, Sonne
+      const stationIds = ['16413', '54'];                        // Zwei Beispielstationen
+      const startDate = '2025-01-01T00:00';                      // ISO Datumsformat
+      const endDate   = '2025-01-01T23:00';
+      const outputFormat = 'geojson';                            // muss geojson sein!
+
+      // === URL dynamisch zusammenbauen ===
+      let url = `${baseUrl}?`;
+
+      // Parameter mehrfach anhängen
+      parameters.forEach(param => {
+        url += `parameters=${param}&`;
+      });
+
+      stationIds.forEach(id => {
+        url += `station_ids=${id}&`;
+      });
+
+      // Weitere feste Parameter anhängen
+      url += `start=${encodeURIComponent(startDate)}&`;  // Sonderzeichen umwandeln
+      url += `end=${encodeURIComponent(endDate)}&`;
+      url += `output_format=${outputFormat}`;
+
+      console.log('Request URL:', url);
+
+      // === Daten abrufen ===
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP-Fehler: ${response.status}`);
+        const data = await response.json();
+
+        console.log('GeoJSON-Daten:', data);
+
+        // Beispiel: Daten extrahieren
+        //
+        // data.features enthält ein Objekt pro Station
+        data.features.forEach(feature => {
+          const p = feature.properties.parameters;
+
+          // p ist kurz für parameters; p.tl.data ist das Array für Temperaturwerte; p.tl.unit ist die zugehörige Einheit
+          // feature.properties.station ist die Stations Nummer
+          // data.timestamps ist das Array mit allen Zeitstempeln
+
+          console.log(`Zeit: ${data.timestamps[0]}, Station: ${feature.properties.station}, Temp: ${p.tl.data[0]}${p.tl.unit}, Wind: ${p.ff.data[0]}${p.ff.unit}, Regen: ${p.rr.data[0]}${p.rr.unit}, Sonne: ${p.so_h.data[0]}${p.so_h.unit}`);
+        });
+
+      } catch (error) {
+        console.error('Fehler beim Abrufen:', error);
+      }
+    });
+  </script>
+</body>
+</html>
