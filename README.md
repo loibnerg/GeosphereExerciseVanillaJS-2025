@@ -181,6 +181,6 @@ Hier das Frontend von Geosphere zum Probieren: https://dataset.api.hub.geosphere
 
 ---
 
-Viel Erfolg beim Coden & Explorieren!
+Viel Erfolg beim Coden!
 
 
